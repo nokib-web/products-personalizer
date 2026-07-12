@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model CustomizableProduct {
+  id               String                @id @default(cuid())
+  shop             String
+  shopifyProductId String
+  title            String
+  isActive         Boolean               @default(true)
+  mockupImageUrl   String
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  options          CustomizationOption[]
+  submissions      DesignSubmission[]
+}
+
+model CustomizationOption {
+  id                    String              @id @default(cuid())
+  customizableProductId String
+  customizableProduct   CustomizableProduct @relation(fields: [customizableProductId], references: [id], onDelete: Cascade)
+  type                  String // TEXT, IMAGE_UPLOAD, COLOR_PICKER, DROPDOWN
+  label                 String
+  required              Boolean             @default(false)
+  config                String // JSON string storing type-specific settings
+  printAreaX            Float               @default(0)
+  printAreaY            Float               @default(0)
+  printAreaWidth        Float               @default(200)
+  printAreaHeight       Float               @default(200)
+  sortOrder             Int                 @default(0)
+}
+
+model DesignSubmission {
+  id                    String              @id @default(cuid())
+  shop                  String
+  customizableProductId String
+  customizableProduct   CustomizableProduct @relation(fields: [customizableProductId], references: [id], onDelete: Cascade)
+  shopifyOrderId        String?
+  shopifyLineItemId     String?
+  designData            String // JSON string (Fabric.js/Konva canvas export)
+  previewImageUrl       String
+  hiResImageUrl         String?
+  customerNote          String?
+  status                String              @default("PENDING") // PENDING, ORDERED, IN_PRODUCTION, COMPLETED
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+}

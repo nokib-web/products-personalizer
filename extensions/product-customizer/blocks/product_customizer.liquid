@@ -1,0 +1,747 @@
+<div
+  id="pxl-product-customizer-root"
+  class="pxl-customizer-container"
+  style="display: none;"
+  data-product-id="{{ product.id }}"
+  data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+  data-shop="{{ shop.permanent_domain | default: shop.domain }}"
+>
+  <div class="pxl-customizer-header">
+    <h3 class="pxl-customizer-title">{{ block.settings.heading | default: "Personalize Your Product" }}</h3>
+    <p class="pxl-customizer-subtitle">Design your custom product in real-time before adding to cart.</p>
+  </div>
+
+  <div class="pxl-customizer-layout">
+    <div class="pxl-canvas-column" id="pxl-canvas-wrapper">
+      <div class="pxl-canvas-container-inner">
+        <canvas id="pxl-customizer-canvas"></canvas>
+      </div>
+      <div class="pxl-canvas-footer">
+        <span class="pxl-canvas-tip">💡 Tip: Click and drag elements on the preview to move or resize them.</span>
+      </div>
+    </div>
+
+    <div class="pxl-controls-column">
+      <div id="pxl-options-list" class="pxl-options-list">
+        <!-- Options rendered dynamically -->
+      </div>
+
+      <div id="pxl-error-banner" class="pxl-error-banner" style="display: none;"></div>
+      <div id="pxl-success-banner" class="pxl-success-banner" style="display: none;"></div>
+
+      <div class="pxl-actions">
+        <button id="pxl-add-to-cart-btn" class="pxl-btn-primary">
+          <span>{{ block.settings.button_label | default: "Add Customized to Cart" }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .pxl-customizer-container {
+    display: flex;
+    flex-direction: column;
+    margin: 24px 0;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #e1e3e5;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #202223;
+  }
+
+  .pxl-customizer-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f1f2f4;
+    padding-bottom: 12px;
+  }
+
+  .pxl-customizer-title {
+    margin: 0 0 6px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1c1d;
+  }
+
+  .pxl-customizer-subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: #6d7175;
+  }
+
+  .pxl-customizer-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 767px) {
+    .pxl-customizer-layout {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .pxl-customizer-container {
+      padding: 16px;
+    }
+  }
+
+  .pxl-canvas-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f8f9fa;
+    border: 1px solid #e1e3e5;
+    border-radius: 8px;
+    padding: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .pxl-canvas-container-inner {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .pxl-canvas-footer {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #6d7175;
+    text-align: center;
+  }
+
+  .pxl-controls-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .pxl-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .pxl-option-card {
+    background: #f9fafb;
+    border: 1px solid #e1e3e5;
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pxl-option-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #202223;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pxl-required-badge {
+    color: #d82c0d;
+    font-weight: 700;
+  }
+
+  .pxl-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pxl-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .pxl-text-input,
+  .pxl-select-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #c9cccf;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #202223;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .pxl-text-input:focus,
+  .pxl-select-input:focus {
+    border-color: #2c6ecb;
+    box-shadow: 0 0 0 1px #2c6ecb;
+  }
+
+  .pxl-file-input {
+    font-size: 13px;
+    color: #4a4f55;
+  }
+
+  .pxl-swatch-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .pxl-swatch-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px #c9cccf;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+  }
+
+  .pxl-swatch-btn:hover {
+    transform: scale(1.1);
+  }
+
+  .pxl-swatch-btn.active {
+    box-shadow: 0 0 0 2px #202223;
+    transform: scale(1.1);
+  }
+
+  .pxl-error-banner {
+    padding: 12px;
+    background-color: #fff4f4;
+    border: 1px solid #f6c8c8;
+    border-radius: 6px;
+    color: #d82c0d;
+    font-size: 13px;
+  }
+
+  .pxl-success-banner {
+    padding: 12px;
+    background-color: #f1f8f5;
+    border: 1px solid #bce3c5;
+    border-radius: 6px;
+    color: #008060;
+    font-size: 13px;
+  }
+
+  .pxl-actions {
+    margin-top: 8px;
+  }
+
+  .pxl-btn-primary {
+    width: 100%;
+    padding: 14px 20px;
+    background-color: #008060;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .pxl-btn-primary:hover:not(:disabled) {
+    background-color: #006e52;
+  }
+
+  .pxl-btn-primary:disabled {
+    background-color: #919e9b;
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script>
+  (function () {
+    const root = document.getElementById("pxl-product-customizer-root");
+    if (!root) return;
+
+    const productId = root.getAttribute("data-product-id");
+    const variantId = root.getAttribute("data-variant-id");
+    const shop = root.getAttribute("data-shop");
+
+    if (!productId) return;
+
+    let canvas = null;
+    let customizableProduct = null;
+    let optionValues = {};
+    let logicalWidth = 500;
+    let logicalHeight = 500;
+
+    function initCustomizer() {
+      fetch(`/apps/customizer/config?productId=${productId}&shop=${shop || ""}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data || !data.active || !data.customizableProduct) {
+            root.style.display = "none";
+            return;
+          }
+
+          customizableProduct = data.customizableProduct;
+          root.style.display = "flex";
+          setupCanvas();
+          renderControls();
+        })
+        .catch((err) => {
+          console.error("Failed to load Product Customizer config:", err);
+          root.style.display = "none";
+        });
+    }
+
+    function setupCanvas() {
+      const canvasEl = document.getElementById("pxl-customizer-canvas");
+      const wrapper = document.getElementById("pxl-canvas-wrapper");
+      
+      const wrapperWidth = Math.min(wrapper.clientWidth - 32, 500);
+      logicalWidth = wrapperWidth > 250 ? wrapperWidth : 450;
+      logicalHeight = logicalWidth;
+
+      canvas = new fabric.Canvas(canvasEl, {
+        width: logicalWidth,
+        height: logicalHeight,
+        selection: true,
+        preserveObjectStacking: true,
+      });
+
+      if (customizableProduct.mockupImageUrl) {
+        fabric.Image.fromURL(
+          customizableProduct.mockupImageUrl,
+          function (img) {
+            const scale = Math.min(
+              logicalWidth / img.width,
+              logicalHeight / img.height
+            );
+            img.set({
+              scaleX: scale,
+              scaleY: scale,
+              left: (logicalWidth - img.width * scale) / 2,
+              top: (logicalHeight - img.height * scale) / 2,
+              selectable: false,
+              evented: false,
+            });
+            canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+          },
+          { crossOrigin: "anonymous" }
+        );
+      }
+
+      window.addEventListener("resize", handleCanvasResize);
+    }
+
+    function handleCanvasResize() {
+      if (!canvas) return;
+      const wrapper = document.getElementById("pxl-canvas-wrapper");
+      const newWidth = Math.min(wrapper.clientWidth - 32, logicalWidth);
+      if (newWidth > 100) {
+        const zoom = newWidth / logicalWidth;
+        canvas.setDimensions({
+          width: logicalWidth * zoom,
+          height: logicalHeight * zoom,
+        });
+        canvas.setZoom(zoom);
+        canvas.renderAll();
+      }
+    }
+
+    function renderControls() {
+      const optionsListEl = document.getElementById("pxl-options-list");
+      optionsListEl.innerHTML = "";
+
+      if (!customizableProduct.options || customizableProduct.options.length === 0) {
+        optionsListEl.innerHTML = '<p style="color:#6d7175;font-size:14px;">No customizable options configured for this product.</p>';
+        return;
+      }
+
+      customizableProduct.options.forEach((opt) => {
+        const card = document.createElement("div");
+        card.className = "pxl-option-card";
+
+        const labelEl = document.createElement("div");
+        labelEl.className = "pxl-option-label";
+        labelEl.innerHTML = `<span>${opt.label}</span>${opt.required ? '<span class="pxl-required-badge">* Required</span>' : ''}`;
+        card.appendChild(labelEl);
+
+        const inputGroup = document.createElement("div");
+        inputGroup.className = "pxl-input-group";
+
+        if (opt.type === "TEXT") {
+          const fontChoices = opt.config.fonts || ["Arial", "Courier New", "Georgia", "Times New Roman", "Verdana"];
+          if (fontChoices.length > 0) {
+            const selectFont = document.createElement("select");
+            selectFont.className = "pxl-select-input";
+            fontChoices.forEach((font) => {
+              const option = document.createElement("option");
+              option.value = font;
+              option.textContent = font;
+              selectFont.appendChild(option);
+            });
+            selectFont.addEventListener("change", (e) => updateTextObject(opt, { fontFamily: e.target.value }));
+            inputGroup.appendChild(selectFont);
+          }
+
+          const textInput = document.createElement("input");
+          textInput.type = "text";
+          textInput.className = "pxl-text-input";
+          textInput.placeholder = "Enter custom text...";
+          if (opt.config.maxChars) textInput.maxLength = opt.config.maxChars;
+
+          textInput.addEventListener("input", (e) => {
+            const val = e.target.value;
+            optionValues[opt.id] = val;
+            updateTextObject(opt, { text: val });
+          });
+          inputGroup.appendChild(textInput);
+        } else if (opt.type === "IMAGE_UPLOAD") {
+          const fileInput = document.createElement("input");
+          fileInput.type = "file";
+          fileInput.accept = "image/*";
+          fileInput.className = "pxl-file-input";
+
+          fileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const maxMB = opt.config.maxFileSizeMB || 10;
+            if (file.size > maxMB * 1024 * 1024) {
+              showError(`File size exceeds the limit of ${maxMB} MB.`);
+              return;
+            }
+
+            hideError();
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              const dataUrl = event.target.result;
+              optionValues[opt.id] = dataUrl;
+              updateImageObject(opt, dataUrl);
+            };
+            reader.readAsDataURL(file);
+          });
+          inputGroup.appendChild(fileInput);
+        } else if (opt.type === "COLOR_PICKER") {
+          const colors = opt.config.colors || ["#FF0000", "#00FF00", "#0000FF", "#000000", "#FFFFFF"];
+          const swatchList = document.createElement("div");
+          swatchList.className = "pxl-swatch-list";
+
+          colors.forEach((hex) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "pxl-swatch-btn";
+            btn.style.backgroundColor = hex;
+            btn.addEventListener("click", () => {
+              swatchList.querySelectorAll(".pxl-swatch-btn").forEach((b) => b.classList.remove("active"));
+              btn.classList.add("active");
+              optionValues[opt.id] = hex;
+              updateColorObject(opt, hex);
+            });
+            swatchList.appendChild(btn);
+          });
+          inputGroup.appendChild(swatchList);
+        } else if (opt.type === "DROPDOWN") {
+          const choices = opt.config.choices || ["Choice 1", "Choice 2", "Choice 3"];
+          const select = document.createElement("select");
+          select.className = "pxl-select-input";
+
+          const defaultOpt = document.createElement("option");
+          defaultOpt.value = "";
+          defaultOpt.textContent = "-- Select an option --";
+          select.appendChild(defaultOpt);
+
+          choices.forEach((choice) => {
+            const option = document.createElement("option");
+            option.value = choice;
+            option.textContent = choice;
+            select.appendChild(option);
+          });
+
+          select.addEventListener("change", (e) => {
+            const val = e.target.value;
+            optionValues[opt.id] = val;
+            updateDropdownObject(opt, val);
+          });
+          inputGroup.appendChild(select);
+        }
+
+        card.appendChild(inputGroup);
+        optionsListEl.appendChild(card);
+      });
+    }
+
+    function findObjectByOptId(optId) {
+      if (!canvas) return null;
+      return canvas.getObjects().find((o) => o.optId === optId);
+    }
+
+    function updateTextObject(opt, updates) {
+      if (!canvas) return;
+      let obj = findObjectByOptId(opt.id);
+
+      if (updates.text === "") {
+        if (obj) canvas.remove(obj);
+        canvas.renderAll();
+        return;
+      }
+
+      if (obj) {
+        if (updates.text !== undefined) obj.set("text", updates.text);
+        if (updates.fontFamily !== undefined) obj.set("fontFamily", updates.fontFamily);
+        if (updates.fill !== undefined) obj.set("fill", updates.fill);
+      } else if (updates.text) {
+        const selectEl = document.querySelector(`.pxl-option-card select`);
+        const initialFont = selectEl ? selectEl.value : (opt.config.fonts?.[0] || "Arial");
+        
+        obj = new fabric.IText(updates.text, {
+          left: opt.printAreaX || 50,
+          top: opt.printAreaY || 50,
+          width: opt.printAreaWidth || 200,
+          fontSize: opt.config.defaultFontSize || 24,
+          fontFamily: initialFont,
+          fill: opt.config.defaultColor || "#000000",
+          editable: true,
+        });
+        obj.optId = opt.id;
+        canvas.add(obj);
+        canvas.setActiveObject(obj);
+      }
+      canvas.renderAll();
+    }
+
+    function updateImageObject(opt, dataUrl) {
+      if (!canvas) return;
+      let oldObj = findObjectByOptId(opt.id);
+      if (oldObj) canvas.remove(oldObj);
+
+      fabric.Image.fromURL(
+        dataUrl,
+        function (img) {
+          const targetW = opt.printAreaWidth || 150;
+          const targetH = opt.printAreaHeight || 150;
+          const scale = Math.min(targetW / img.width, targetH / img.height);
+
+          img.set({
+            left: opt.printAreaX || 50,
+            top: opt.printAreaY || 50,
+            scaleX: scale,
+            scaleY: scale,
+          });
+          img.optId = opt.id;
+          canvas.add(img);
+          canvas.setActiveObject(img);
+          canvas.renderAll();
+        },
+        { crossOrigin: "anonymous" }
+      );
+    }
+
+    function updateColorObject(opt, hexColor) {
+      if (!canvas) return;
+      const activeObj = canvas.getActiveObject();
+      if (activeObj && (activeObj instanceof fabric.IText || activeObj instanceof fabric.Text || activeObj instanceof fabric.Path)) {
+        activeObj.set("fill", hexColor);
+        canvas.renderAll();
+      } else {
+        canvas.getObjects().forEach((obj) => {
+          if (obj instanceof fabric.IText || obj instanceof fabric.Text) {
+            obj.set("fill", hexColor);
+          }
+        });
+        canvas.renderAll();
+      }
+    }
+
+    function updateDropdownObject(opt, choiceVal) {
+      if (!canvas) return;
+      let obj = findObjectByOptId(opt.id);
+      if (obj) canvas.remove(obj);
+
+      if (!choiceVal) {
+        canvas.renderAll();
+        return;
+      }
+
+      if (choiceVal.match(/^https?:\/\/.+\.(png|jpg|jpeg|svg|webp)($|\?)/i)) {
+        fabric.Image.fromURL(
+          choiceVal,
+          function (img) {
+            const targetW = opt.printAreaWidth || 150;
+            const targetH = opt.printAreaHeight || 150;
+            const scale = Math.min(targetW / img.width, targetH / img.height);
+            img.set({
+              left: opt.printAreaX || 50,
+              top: opt.printAreaY || 50,
+              scaleX: scale,
+              scaleY: scale,
+            });
+            img.optId = opt.id;
+            canvas.add(img);
+            canvas.renderAll();
+          },
+          { crossOrigin: "anonymous" }
+        );
+      } else {
+        obj = new fabric.Text(choiceVal, {
+          left: opt.printAreaX || 50,
+          top: opt.printAreaY || 50,
+          fontSize: 26,
+          fill: "#111111",
+          fontWeight: "bold",
+        });
+        obj.optId = opt.id;
+        canvas.add(obj);
+        canvas.renderAll();
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("pxl-error-banner");
+      el.textContent = msg;
+      el.style.display = "block";
+    }
+
+    function hideError() {
+      const el = document.getElementById("pxl-error-banner");
+      el.style.display = "none";
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById("pxl-success-banner");
+      el.textContent = msg;
+      el.style.display = "block";
+    }
+
+    const addToCartBtn = document.getElementById("pxl-add-to-cart-btn");
+    addToCartBtn.addEventListener("click", async function () {
+      hideError();
+      const missingRequired = customizableProduct.options.filter(
+        (opt) => opt.required && !optionValues[opt.id]
+      );
+
+      if (missingRequired.length > 0) {
+        showError(`Please complete all required options: ${missingRequired.map((o) => o.label).join(", ")}`);
+        return;
+      }
+
+      addToCartBtn.disabled = true;
+      const originalText = addToCartBtn.querySelector("span").textContent;
+      addToCartBtn.querySelector("span").textContent = "Processing Design...";
+
+      try {
+        canvas.discardActiveObject();
+        canvas.renderAll();
+
+        const designData = JSON.stringify(canvas.toJSON());
+        const previewDataUrl = canvas.toDataURL({
+          format: "png",
+          quality: 0.85,
+          multiplier: 1.5,
+        });
+
+        const previewResponse = await fetch("/apps/customizer/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageDataUrl: previewDataUrl,
+            customizableProductId: customizableProduct.id,
+          }),
+        });
+
+        const previewJson = await previewResponse.json();
+        if (!previewResponse.ok || previewJson.error) {
+          throw new Error(previewJson.error || "Failed to generate preview image");
+        }
+
+        const previewImageUrl = previewJson.previewImageUrl;
+        const designId = previewJson.previewId || `design_${Date.now()}`;
+
+        await fetch("/apps/customizer/submission", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            designId,
+            customizableProductId: customizableProduct.id,
+            designData,
+            previewImageUrl,
+            customerNote: "Submitted from storefront customizer block",
+          }),
+        });
+
+        addToCartBtn.querySelector("span").textContent = "Adding to Cart...";
+        const cartResponse = await fetch("/cart/add.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: [
+              {
+                id: parseInt(variantId, 10) || variantId,
+                quantity: 1,
+                properties: {
+                  _customizer_design_id: designId,
+                  _preview_image: previewImageUrl,
+                },
+              },
+            ],
+          }),
+        });
+
+        if (!cartResponse.ok) {
+          const cartErr = await cartResponse.json();
+          throw new Error(cartErr.description || "Could not add product to cart");
+        }
+
+        showSuccess("Design saved and added to cart successfully!");
+        addToCartBtn.querySelector("span").textContent = "Added!";
+        
+        setTimeout(() => {
+          if (typeof window.Shopify !== "undefined" && window.Shopify.onCartUpdate) {
+            window.Shopify.onCartUpdate();
+          }
+          window.location.href = "/cart";
+        }, 1200);
+      } catch (err) {
+        console.error("Add to cart error:", err);
+        showError(err.message || "An error occurred while adding to cart.");
+        addToCartBtn.disabled = false;
+        addToCartBtn.querySelector("span").textContent = originalText;
+      }
+    });
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initCustomizer);
+    } else {
+      initCustomizer();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Product Customizer",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading Text",
+      "default": "Personalize Your Product"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Add to Cart Button Label",
+      "default": "Add Customized to Cart"
+    }
+  ]
+}
+{% endschema %}
