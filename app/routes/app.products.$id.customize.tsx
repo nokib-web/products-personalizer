@@ -234,6 +234,22 @@ export default function CustomizerBuilder() {
     origH: number;
   } | null>(null);
 
+  useEffect(() => {
+    if (customizableProduct) {
+      setMockupImageUrl(customizableProduct.mockupImageUrl || shopifyProduct.imageUrl || "");
+      setIsActive(customizableProduct.isActive ?? true);
+      if (customizableProduct.options && customizableProduct.options.length > 0) {
+        setOptions(customizableProduct.options);
+        setSelectedOptionId((prevId) => {
+          if (prevId && customizableProduct.options.some((o: any) => o.id === prevId)) {
+            return prevId;
+          }
+          return customizableProduct.options[0].id;
+        });
+      }
+    }
+  }, [customizableProduct, shopifyProduct.imageUrl]);
+
   const selectedOption = options.find((opt) => opt.id === selectedOptionId) || null;
 
   const handleAddOption = () => {
