@@ -1,9 +1,9 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "5d2e06af6ef7c84f2a3d3d4716a1ba5f"
-name = "products-personalizer"
-application_url = "https://example.com"
+name = "Personalizer"
+application_url = "https://shopify.dev/apps/default-app-home"
 embedded = true
+client_id = "1236f82836daaef4a9116d5364dd6fd5"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -33,9 +33,8 @@ api_version = "2026-10"
   uri = "/webhooks/orders/paid"
   topics = [ "orders/paid" ]
 
-
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
 
 [build]
 include_config_on_deploy = true
