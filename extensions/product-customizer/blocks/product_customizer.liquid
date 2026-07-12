@@ -542,7 +542,6 @@
   }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <script>
   (function () {
     const root = document.getElementById("pxl-product-customizer-root");
@@ -563,7 +562,30 @@
     const deleteBtn = document.getElementById("pxl-btn-delete-selected");
     const resetBtn = document.getElementById("pxl-btn-reset-canvas");
 
+    function loadFabricAndInit() {
+      if (root.getAttribute("data-pxl-initialized") === "true") return;
+      if (typeof window.fabric !== "undefined") {
+        initCustomizer();
+        return;
+      }
+      let script = document.getElementById("pxl-fabric-script");
+      if (script) {
+        script.addEventListener("load", initCustomizer);
+        return;
+      }
+      script = document.createElement("script");
+      script.id = "pxl-fabric-script";
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js";
+      script.async = true;
+      script.onload = initCustomizer;
+      document.head.appendChild(script);
+    }
+
     function initCustomizer() {
+      if (root.getAttribute("data-pxl-initialized") === "true") return;
+      if (typeof window.fabric === "undefined") return;
+      root.setAttribute("data-pxl-initialized", "true");
+
       fetch(`/apps/customizer/config?productId=${productId}&shop=${shop || ""}`)
         .then((res) => res.json())
         .then((data) => {
@@ -630,8 +652,19 @@
     }
 
     function setupCanvas() {
-      const canvasEl = document.getElementById("pxl-customizer-canvas");
+      if (canvas) {
+        try { canvas.dispose(); } catch (e) {}
+        canvas = null;
+      }
       const studio = document.querySelector(".pxl-canvas-studio");
+      const existingContainer = studio.querySelector(".canvas-container");
+      if (existingContainer && existingContainer.parentElement) {
+        const rawCanvas = document.createElement("canvas");
+        rawCanvas.id = "pxl-customizer-canvas";
+        existingContainer.parentElement.replaceChild(rawCanvas, existingContainer);
+      }
+      const canvasEl = document.getElementById("pxl-customizer-canvas");
+      if (!canvasEl) return;
       
       const availableWidth = Math.min(studio.clientWidth - 32, 520);
       logicalWidth = availableWidth > 280 ? availableWidth : 340;
@@ -978,9 +1011,9 @@
         const initialFont = selectEl ? selectEl.value : (opt.config.fonts?.[0] || "Arial");
         
         obj = new fabric.IText(updates.text, {
-          left: opt.printAreaX || (logicalWidth * 0.2),
-          top: opt.printAreaY || (logicalHeight * 0.4),
-          width: opt.printAreaWidth || (logicalWidth * 0.6),
+          left: Number(opt.printAreaX) || (logicalWidth * 0.2),
+          top: Number(opt.printAreaY) || (logicalHeight * 0.4),
+          width: Number(opt.printAreaWidth) || (logicalWidth * 0.6),
           fontSize: opt.config.defaultFontSize || 28,
           fontFamily: initialFont,
           fill: opt.config.defaultColor || "#0f172a",
@@ -1014,13 +1047,13 @@
       fabric.Image.fromURL(
         dataUrl,
         function (img) {
-          const targetW = opt.printAreaWidth || (logicalWidth * 0.45);
-          const targetH = opt.printAreaHeight || (logicalHeight * 0.45);
+          const targetW = Number(opt.printAreaWidth) || (logicalWidth * 0.45);
+          const targetH = Number(opt.printAreaHeight) || (logicalHeight * 0.45);
           const scale = Math.min(targetW / img.width, targetH / img.height);
 
           img.set({
-            left: opt.printAreaX || (logicalWidth * 0.28),
-            top: opt.printAreaY || (logicalHeight * 0.28),
+            left: Number(opt.printAreaX) || (logicalWidth * 0.28),
+            top: Number(opt.printAreaY) || (logicalHeight * 0.28),
             scaleX: scale,
             scaleY: scale,
             selectable: true,
