@@ -1,0 +1,75 @@
+{% if template.name == 'cart' or true %}
+<script>
+  (function() {
+    function replaceCartItemImages() {
+      // Find all cart items across common themes (Dawn, Debut, etc.)
+      const cartItems = document.querySelectorAll('.cart-item, .cart__item, .drawer__cart-item, [id^="CartItem-"]');
+      
+      // If no specific item containers found, query cart endpoints and match rows by links
+      fetch('/cart.js')
+        .then(res => res.json())
+        .then(cart => {
+          if (!cart || !cart.items) return;
+          
+          cart.items.forEach((item, index) => {
+            const previewUrl = item.properties && (item.properties['Design Preview'] || item.properties['_preview_image']);
+            if (!previewUrl) return;
+
+            // Try to find matching item row in DOM by index or item key
+            let row = cartItems[index];
+            if (!row) {
+              const rows = document.querySelectorAll(`[data-key="${item.key}"], [id*="${item.key}"]`);
+              if (rows.length > 0) row = rows[0];
+            }
+
+            if (row) {
+              const img = row.querySelector('img.cart-item__image, .cart-item img, .cart__image img, img');
+              if (img && img.src !== previewUrl) {
+                img.src = previewUrl;
+                if (img.srcset) img.srcset = previewUrl;
+                img.style.objectFit = 'contain';
+                img.style.background = '#f8fafc';
+                img.style.borderRadius = '8px';
+                img.style.border = '1px solid #e2e8f0';
+              }
+            } else {
+              // Fallback for drawer/table rows where index matches table tr or li
+              const allImages = document.querySelectorAll('.cart-item__image, .cart-item img, table.cart-items img, .drawer__cart img');
+              if (allImages[index]) {
+                const img = allImages[index];
+                if (img.src !== previewUrl) {
+                  img.src = previewUrl;
+                  if (img.srcset) img.srcset = previewUrl;
+                  img.style.objectFit = 'contain';
+                  img.style.background = '#f8fafc';
+                  img.style.borderRadius = '8px';
+                  img.style.border = '1px solid #e2e8f0';
+                }
+              }
+            }
+          });
+        })
+        .catch(err => console.debug('Cart image sync check:', err));
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', replaceCartItemImages);
+    } else {
+      replaceCartItemImages();
+    }
+
+    // Re-check when cart drawer opens or cart updates via AJAX
+    document.addEventListener('cart:updated', replaceCartItemImages);
+    document.addEventListener('cart:refresh', replaceCartItemImages);
+    setInterval(replaceCartItemImages, 1500);
+  })();
+</script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Cart Preview Sync",
+  "target": "body",
+  "settings": []
+}
+{% endschema %}

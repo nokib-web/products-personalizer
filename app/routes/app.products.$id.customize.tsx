@@ -608,6 +608,16 @@ export default function CustomizerBuilder() {
                         onChange={(val) => updateOptionField(selectedOption.id, "required", val)}
                       />
 
+                      <TextField
+                        label="Option Price Add-on ($)"
+                        type="number"
+                        placeholder="0.00"
+                        value={String(selectedOption.config?.priceAddon || "")}
+                        onChange={(val) => updateOptionConfig(selectedOption.id, "priceAddon", Number(val))}
+                        autoComplete="off"
+                        helpText="Extra cost added when customer uses this customization option."
+                      />
+
                       <Divider />
 
                       <Text as="h4" variant="headingSm">
