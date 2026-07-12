@@ -43,22 +43,29 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       status: "PENDING",
     };
 
+    let finalPreviewImageUrl = previewImageUrl || "";
     let submission;
     if (designId) {
       const existing = await prisma.designSubmission.findUnique({ where: { id: designId } });
       if (existing) {
+        if (existing.previewImageUrl?.startsWith("data:image/") && (!finalPreviewImageUrl || finalPreviewImageUrl.startsWith("/apps/") || finalPreviewImageUrl.startsWith("http"))) {
+          finalPreviewImageUrl = existing.previewImageUrl;
+        }
         submission = await prisma.designSubmission.update({
           where: { id: designId },
-          data: dataPayload,
+          data: {
+            ...dataPayload,
+            previewImageUrl: finalPreviewImageUrl || existing.previewImageUrl || "",
+          },
         });
       } else {
         submission = await prisma.designSubmission.create({
-          data: { ...dataPayload, id: designId },
+          data: { ...dataPayload, previewImageUrl: finalPreviewImageUrl, id: designId },
         });
       }
     } else {
       submission = await prisma.designSubmission.create({
-        data: dataPayload,
+        data: { ...dataPayload, previewImageUrl: finalPreviewImageUrl },
       });
     }
 

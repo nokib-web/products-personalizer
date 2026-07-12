@@ -1,21 +1,20 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import prisma from "../db.server";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const url = new URL(request.url);
-  const id = url.searchParams.get("id");
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const { id } = params;
 
   if (!id) {
-    return new Response("Missing id parameter", { status: 400 });
+    return new Response("Missing submission id parameter", { status: 400 });
   }
 
   const submission = await prisma.designSubmission.findUnique({
     where: { id },
-    select: { previewImageUrl: true, designData: true },
+    select: { previewImageUrl: true, hiResImageUrl: true, designData: true },
   });
 
   if (!submission) {
-    return new Response("Image not found", { status: 404 });
+    return new Response("Submission not found", { status: 404 });
   }
 
   let base64Target = submission.previewImageUrl || "";
@@ -33,7 +32,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         }
       }
     } catch (err) {
-      console.error("Proxy image fallback error:", err);
+      console.error("Error parsing designData for fallback image:", err);
     }
   }
 
@@ -55,5 +54,5 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     });
   }
 
-  return new Response("Image not found", { status: 404 });
+  return new Response("Image format require direct base64 storage", { status: 404 });
 };

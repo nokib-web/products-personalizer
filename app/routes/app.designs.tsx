@@ -42,17 +42,33 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     },
   });
 
+  const formattedSubmissions = submissions.map((s) => {
+    let preview = s.previewImageUrl || "";
+    if (preview.startsWith("/apps/") || (preview && !preview.startsWith("data:image/") && !preview.startsWith("http"))) {
+      preview = `/app/image/${s.id}`;
+    }
+    let hiRes = s.hiResImageUrl || "";
+    if (hiRes && (hiRes.startsWith("/apps/") || (!hiRes.startsWith("data:image/") && !hiRes.startsWith("http")))) {
+      hiRes = `/app/image/${s.id}`;
+    }
+    return {
+      ...s,
+      previewImageUrl: preview || `/app/image/${s.id}`,
+      hiResImageUrl: hiRes || preview || `/app/image/${s.id}`,
+    };
+  });
+
   const summary = {
-    total: submissions.length,
-    pending: submissions.filter((s) => s.status === "PENDING").length,
-    ordered: submissions.filter((s) => s.status === "ORDERED").length,
-    inProduction: submissions.filter((s) => s.status === "IN_PRODUCTION").length,
-    completed: submissions.filter((s) => s.status === "COMPLETED").length,
+    total: formattedSubmissions.length,
+    pending: formattedSubmissions.filter((s) => s.status === "PENDING").length,
+    ordered: formattedSubmissions.filter((s) => s.status === "ORDERED").length,
+    inProduction: formattedSubmissions.filter((s) => s.status === "IN_PRODUCTION").length,
+    completed: formattedSubmissions.filter((s) => s.status === "COMPLETED").length,
   };
 
   return {
     shop: session.shop,
-    submissions,
+    submissions: formattedSubmissions,
     summary,
   };
 };
