@@ -911,14 +911,42 @@
 
     function updateColorObject(opt, hexColor) {
       if (!canvas) return;
+
+      let obj = findObjectByOptId(opt.id);
+      if (obj) {
+        obj.set("fill", hexColor);
+        canvas.renderAll();
+        updatePriceDisplay();
+        return;
+      }
+
+      if (opt.printAreaWidth && opt.printAreaHeight && (opt.printAreaWidth > 10 || opt.printAreaHeight > 10)) {
+        const rect = new fabric.Rect({
+          left: opt.printAreaX || 0,
+          top: opt.printAreaY || 0,
+          width: opt.printAreaWidth,
+          height: opt.printAreaHeight,
+          fill: hexColor,
+          opacity: 0.65,
+          rx: 8,
+          ry: 8,
+          selectable: true,
+        });
+        rect.optId = opt.id;
+        canvas.add(rect);
+        canvas.renderAll();
+        updatePriceDisplay();
+        return;
+      }
+
       const activeObj = canvas.getActiveObject();
       if (activeObj && (activeObj instanceof fabric.IText || activeObj instanceof fabric.Text || activeObj instanceof fabric.Path)) {
         activeObj.set("fill", hexColor);
         canvas.renderAll();
       } else {
-        canvas.getObjects().forEach((obj) => {
-          if (obj instanceof fabric.IText || obj instanceof fabric.Text) {
-            obj.set("fill", hexColor);
+        canvas.getObjects().forEach((o) => {
+          if (o instanceof fabric.IText || o instanceof fabric.Text) {
+            o.set("fill", hexColor);
           }
         });
         canvas.renderAll();
@@ -1023,7 +1051,7 @@
             designId,
             customizableProductId: customizableProduct.id,
             designData,
-            previewImageUrl,
+            previewImageUrl: previewDataUrl,
             customerNote: "Created with Interactive Studio",
           }),
         });
