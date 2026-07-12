@@ -26,8 +26,14 @@
       
       <!-- Canvas Actions Bar -->
       <div class="pxl-canvas-toolbar">
-        <span class="pxl-canvas-tip">💡 Tip: Drag & resize layers directly on the preview</span>
+        <span class="pxl-canvas-tip">💡 Tip: Scroll/pinch to zoom, drag layers to reposition</span>
         <div class="pxl-canvas-actions">
+          <div class="pxl-zoom-controls">
+            <button type="button" id="pxl-btn-zoom-out" class="pxl-toolbar-btn pxl-zoom-btn" title="Zoom Out (-)">➖</button>
+            <span id="pxl-zoom-level" class="pxl-zoom-display">100%</span>
+            <button type="button" id="pxl-btn-zoom-in" class="pxl-toolbar-btn pxl-zoom-btn" title="Zoom In (+)">➕</button>
+            <button type="button" id="pxl-btn-zoom-reset" class="pxl-toolbar-btn pxl-zoom-btn" title="Reset View">⛶</button>
+          </div>
           <button type="button" id="pxl-btn-delete-selected" class="pxl-toolbar-btn" disabled title="Delete selected element">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             <span>Delete</span>
@@ -198,6 +204,37 @@
   .pxl-canvas-actions {
     display: flex;
     gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .pxl-zoom-controls {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 2px 4px;
+    gap: 4px;
+  }
+
+  .pxl-zoom-btn {
+    padding: 4px 8px !important;
+    background: transparent !important;
+    border: none !important;
+    font-size: 14px !important;
+  }
+
+  .pxl-zoom-btn:hover {
+    background: #e2e8f0 !important;
+  }
+
+  .pxl-zoom-display {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    min-width: 38px;
+    text-align: center;
   }
 
   .pxl-toolbar-btn {
@@ -594,7 +631,6 @@
         preserveObjectStacking: true,
       });
 
-      // Customize selection control handles for modern look
       fabric.Object.prototype.set({
         transparentCorners: false,
         cornerColor: "#3b82f6",
@@ -611,17 +647,70 @@
 
       window.addEventListener("resize", handleCanvasResize);
 
-      // Selection state listeners for Delete button
-      canvas.on("selection:created", () => { deleteBtn.disabled = false; });
-      canvas.on("selection:updated", () => { deleteBtn.disabled = false; });
-      canvas.on("selection:cleared", () => { deleteBtn.disabled = true; });
+      // Zoom level tracking and display
+      function updateZoomDisplay() {
+        const display = document.getElementById("pxl-zoom-level");
+        if (display && canvas) {
+          display.textContent = `${Math.round(canvas.getZoom() * 100)}%`;
+        }
+      }
+
+      // Mouse wheel zoom
+      canvas.on("mouse:wheel", function (opt) {
+        let delta = opt.e.deltaY;
+        let zoom = canvas.getZoom();
+        zoom *= Math.pow(0.999, delta);
+        if (zoom > 5) zoom = 5;
+        if (zoom < 0.5) zoom = 0.5;
+        canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+        opt.e.preventDefault();
+        opt.e.stopPropagation();
+        updateZoomDisplay();
+      });
+
+      // Zoom toolbar buttons
+      const zoomInBtn = document.getElementById("pxl-btn-zoom-in");
+      const zoomOutBtn = document.getElementById("pxl-btn-zoom-out");
+      const zoomResetBtn = document.getElementById("pxl-btn-zoom-reset");
+
+      if (zoomInBtn) {
+        zoomInBtn.addEventListener("click", () => {
+          let zoom = canvas.getZoom() * 1.25;
+          if (zoom > 5) zoom = 5;
+          canvas.setZoom(zoom);
+          canvas.renderAll();
+          updateZoomDisplay();
+        });
+      }
+
+      if (zoomOutBtn) {
+        zoomOutBtn.addEventListener("click", () => {
+          let zoom = canvas.getZoom() / 1.25;
+          if (zoom < 0.5) zoom = 0.5;
+          canvas.setZoom(zoom);
+          canvas.renderAll();
+          updateZoomDisplay();
+        });
+      }
+
+      if (zoomResetBtn) {
+        zoomResetBtn.addEventListener("click", () => {
+          canvas.setZoom(1);
+          canvas.absolutePan({ x: 0, y: 0 });
+          canvas.renderAll();
+          updateZoomDisplay();
+        });
+      }
+
+      canvas.on("selection:created", () => { if (deleteBtn) deleteBtn.disabled = false; });
+      canvas.on("selection:updated", () => { if (deleteBtn) deleteBtn.disabled = false; });
+      canvas.on("selection:cleared", () => { if (deleteBtn) deleteBtn.disabled = true; });
 
       if (deleteBtn) {
         deleteBtn.addEventListener("click", () => {
           const active = canvas.getActiveObject();
           if (active) {
             if (active.optId) {
-              // Clear option value if linked
               optionValues[active.optId] = "";
               const textInput = document.querySelector(`[data-opt-id="${active.optId}"] input[type="text"]`);
               if (textInput) textInput.value = "";
@@ -644,7 +733,10 @@
             document.querySelectorAll(".pxl-swatch-btn").forEach((btn) => btn.classList.remove("active"));
             document.querySelectorAll(".pxl-file-pill").forEach((pill) => pill.remove());
             canvas.discardActiveObject();
+            canvas.setZoom(1);
+            canvas.absolutePan({ x: 0, y: 0 });
             canvas.renderAll();
+            updateZoomDisplay();
           }
         });
       }
@@ -860,6 +952,7 @@
         if (updates.text !== undefined) obj.set("text", updates.text);
         if (updates.fontFamily !== undefined) obj.set("fontFamily", updates.fontFamily);
         if (updates.fill !== undefined) obj.set("fill", updates.fill);
+        canvas.bringToFront(obj);
       } else if (updates.text) {
         const selectEl = document.querySelector(`[data-opt-id="${opt.id}"] select`);
         const initialFont = selectEl ? selectEl.value : (opt.config.fonts?.[0] || "Arial");
@@ -872,9 +965,14 @@
           fontFamily: initialFont,
           fill: opt.config.defaultColor || "#0f172a",
           editable: true,
+          selectable: true,
+          evented: true,
+          hasControls: true,
+          hasBorders: true,
         });
         obj.optId = opt.id;
         canvas.add(obj);
+        canvas.bringToFront(obj);
         canvas.setActiveObject(obj);
       }
       canvas.renderAll();
@@ -898,9 +996,14 @@
             top: opt.printAreaY || (logicalHeight * 0.28),
             scaleX: scale,
             scaleY: scale,
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
           });
           img.optId = opt.id;
           canvas.add(img);
+          canvas.bringToFront(img);
           canvas.setActiveObject(img);
           canvas.renderAll();
           updatePriceDisplay();
@@ -930,10 +1033,12 @@
           opacity: 0.65,
           rx: 8,
           ry: 8,
-          selectable: true,
+          selectable: false,
+          evented: false,
         });
         rect.optId = opt.id;
         canvas.add(rect);
+        canvas.sendToBack(rect);
         canvas.renderAll();
         updatePriceDisplay();
         return;
