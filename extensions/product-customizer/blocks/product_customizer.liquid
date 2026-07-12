@@ -183,6 +183,19 @@
     background: #ffffff;
   }
 
+  .pxl-canvas-container-inner .canvas-container {
+    position: relative !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    touch-action: none !important;
+  }
+
+  .pxl-canvas-container-inner canvas {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    touch-action: none !important;
+  }
+
   /* Canvas Toolbar */
   .pxl-canvas-toolbar {
     display: flex;
@@ -646,6 +659,8 @@
       }
 
       window.addEventListener("resize", handleCanvasResize);
+      window.addEventListener("scroll", () => { if (canvas) canvas.calcOffset(); }, { passive: true });
+      setTimeout(() => { if (canvas) canvas.calcOffset(); }, 300);
 
       // Zoom level tracking and display
       function updateZoomDisplay() {
@@ -758,7 +773,10 @@
             selectable: false,
             evented: false,
           });
-          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+          canvas.setBackgroundImage(img, () => {
+            canvas.calcOffset();
+            canvas.renderAll();
+          });
         },
         { crossOrigin: "anonymous" }
       );
@@ -775,6 +793,8 @@
           height: logicalHeight * zoom,
         });
         canvas.setZoom(zoom);
+        canvas.calcOffset();
+        canvas.forEachObject((o) => o.setCoords());
         canvas.renderAll();
       }
     }
@@ -969,11 +989,18 @@
           evented: true,
           hasControls: true,
           hasBorders: true,
+          lockMovementX: false,
+          lockMovementY: false,
+          lockScalingX: false,
+          lockScalingY: false,
+          lockRotation: false,
         });
         obj.optId = opt.id;
         canvas.add(obj);
         canvas.bringToFront(obj);
         canvas.setActiveObject(obj);
+        canvas.calcOffset();
+        obj.setCoords();
       }
       canvas.renderAll();
       updatePriceDisplay();
@@ -1000,11 +1027,18 @@
             evented: true,
             hasControls: true,
             hasBorders: true,
+            lockMovementX: false,
+            lockMovementY: false,
+            lockScalingX: false,
+            lockScalingY: false,
+            lockRotation: false,
           });
           img.optId = opt.id;
           canvas.add(img);
           canvas.bringToFront(img);
           canvas.setActiveObject(img);
+          canvas.calcOffset();
+          img.setCoords();
           canvas.renderAll();
           updatePriceDisplay();
         },
