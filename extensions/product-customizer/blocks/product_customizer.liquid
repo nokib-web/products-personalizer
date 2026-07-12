@@ -6,21 +6,39 @@
   data-variant-id="{{ product.selected_or_first_available_variant.id }}"
   data-shop="{{ shop.permanent_domain | default: shop.domain }}"
 >
+  <!-- Sleek Header -->
   <div class="pxl-customizer-header">
+    <div class="pxl-header-badge">✨ Interactive Studio</div>
     <h3 class="pxl-customizer-title">{{ block.settings.heading | default: "Personalize Your Product" }}</h3>
-    <p class="pxl-customizer-subtitle">Design your custom product in real-time before adding to cart.</p>
+    <p class="pxl-customizer-subtitle">Design your custom product in real time before adding to cart.</p>
   </div>
 
   <div class="pxl-customizer-layout">
+    <!-- Canvas Column (Always prominent & stacked cleanly on narrow screens) -->
     <div class="pxl-canvas-column" id="pxl-canvas-wrapper">
-      <div class="pxl-canvas-container-inner">
-        <canvas id="pxl-customizer-canvas"></canvas>
+      <div class="pxl-canvas-studio">
+        <div class="pxl-canvas-container-inner">
+          <canvas id="pxl-customizer-canvas"></canvas>
+        </div>
       </div>
-      <div class="pxl-canvas-footer">
-        <span class="pxl-canvas-tip">💡 Tip: Click and drag elements on the preview to move or resize them.</span>
+      
+      <!-- Canvas Actions Bar -->
+      <div class="pxl-canvas-toolbar">
+        <span class="pxl-canvas-tip">💡 Tip: Drag & resize layers directly on the preview</span>
+        <div class="pxl-canvas-actions">
+          <button type="button" id="pxl-btn-delete-selected" class="pxl-toolbar-btn" disabled title="Delete selected element">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span>Delete</span>
+          </button>
+          <button type="button" id="pxl-btn-reset-canvas" class="pxl-toolbar-btn" title="Reset design">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>Reset</span>
+          </button>
+        </div>
       </div>
     </div>
 
+    <!-- Controls Column -->
     <div class="pxl-controls-column">
       <div id="pxl-options-list" class="pxl-options-list">
         <!-- Options rendered dynamically -->
@@ -31,7 +49,8 @@
 
       <div class="pxl-actions">
         <button id="pxl-add-to-cart-btn" class="pxl-btn-primary">
-          <span>{{ block.settings.button_label | default: "Add Customized to Cart" }}</span>
+          <svg class="pxl-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="pxl-btn-text">{{ block.settings.button_label | default: "Add Customized to Cart" }}</span>
         </button>
       </div>
     </div>
@@ -39,82 +58,166 @@
 </div>
 
 <style>
+  /* Base Container & Typography */
   .pxl-customizer-container {
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
-    margin: 24px 0;
+    margin: 28px 0;
     padding: 24px;
     background: #ffffff;
-    border: 1px solid #e1e3e5;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #202223;
+    color: #0f172a;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
   }
 
   .pxl-customizer-header {
-    margin-bottom: 20px;
-    border-bottom: 1px solid #f1f2f4;
-    padding-bottom: 12px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 16px;
+  }
+
+  .pxl-header-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    color: #15803d;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+    border: 1px solid #bbf7d0;
   }
 
   .pxl-customizer-title {
     margin: 0 0 6px 0;
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a1c1d;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
   }
 
   .pxl-customizer-subtitle {
     margin: 0;
     font-size: 14px;
-    color: #6d7175;
+    color: #64748b;
+    line-height: 1.5;
   }
 
+  /* Responsive Grid Layout */
   .pxl-customizer-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 28px;
     align-items: start;
   }
 
-  @media (max-width: 767px) {
+  @container (min-width: 640px) {
     .pxl-customizer-layout {
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-    .pxl-customizer-container {
-      padding: 16px;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 32px;
     }
   }
 
+  /* Canvas Studio Column */
   .pxl-canvas-column {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    background: #f8f9fa;
-    border: 1px solid #e1e3e5;
-    border-radius: 8px;
-    padding: 16px;
     width: 100%;
-    box-sizing: border-box;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  }
+
+  .pxl-canvas-studio {
+    position: relative;
+    width: 100%;
+    padding: 20px 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 16px 16px;
+    min-height: 320px;
   }
 
   .pxl-canvas-container-inner {
     position: relative;
-    width: 100%;
     display: flex;
     justify-content: center;
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
     overflow: hidden;
+    background: #ffffff;
   }
 
-  .pxl-canvas-footer {
-    margin-top: 12px;
+  /* Canvas Toolbar */
+  .pxl-canvas-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .pxl-canvas-tip {
     font-size: 12px;
-    color: #6d7175;
-    text-align: center;
+    color: #64748b;
+    font-weight: 500;
   }
 
+  .pxl-canvas-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .pxl-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .pxl-toolbar-btn:hover:not(:disabled) {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .pxl-toolbar-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  #pxl-btn-delete-selected:not(:disabled) {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+  }
+
+  #pxl-btn-delete-selected:not(:disabled):hover {
+    background: #fee2e2;
+  }
+
+  /* Controls Column */
   .pxl-controls-column {
     display: flex;
     flex-direction: column;
@@ -128,138 +231,215 @@
   }
 
   .pxl-option-card {
-    background: #f9fafb;
-    border: 1px solid #e1e3e5;
-    border-radius: 8px;
-    padding: 14px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .pxl-option-card:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
   }
 
   .pxl-option-label {
     font-size: 14px;
-    font-weight: 600;
-    color: #202223;
+    font-weight: 700;
+    color: #0f172a;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
   .pxl-required-badge {
-    color: #d82c0d;
-    font-weight: 700;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 600;
+    background: #fef2f2;
+    padding: 2px 8px;
+    border-radius: 12px;
   }
 
   .pxl-input-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
-  .pxl-input-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
+  /* Styled Inputs */
   .pxl-text-input,
   .pxl-select-input {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #c9cccf;
-    border-radius: 6px;
+    padding: 11px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
     font-size: 14px;
-    background: #ffffff;
-    color: #202223;
+    background: #f8fafc;
+    color: #0f172a;
     box-sizing: border-box;
     outline: none;
-    transition: border-color 0.15s ease;
+    transition: all 0.15s ease;
   }
 
   .pxl-text-input:focus,
   .pxl-select-input:focus {
-    border-color: #2c6ecb;
-    box-shadow: 0 0 0 1px #2c6ecb;
+    background: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
   }
 
-  .pxl-file-input {
+  /* Drag & Drop File Upload Dropzone */
+  .pxl-upload-dropzone {
+    position: relative;
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 20px 16px;
+    text-align: center;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .pxl-upload-dropzone:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+  }
+
+  .pxl-upload-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+
+  .pxl-upload-text {
     font-size: 13px;
-    color: #4a4f55;
+    color: #334155;
+    margin-bottom: 2px;
   }
 
+  .pxl-upload-sub {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  .pxl-file-input-hidden {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .pxl-file-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #1e40af;
+    margin-top: 8px;
+  }
+
+  /* Color Picker Swatches */
   .pxl-swatch-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 4px;
+    gap: 10px;
   }
 
   .pxl-swatch-btn {
-    width: 32px;
-    height: 32px;
+    position: relative;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    border: 2px solid #ffffff;
-    box-shadow: 0 0 0 1px #c9cccf;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 1px #cbd5e1;
     cursor: pointer;
-    transition: transform 0.1s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .pxl-swatch-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.12);
+    box-shadow: 0 0 0 2px #64748b;
   }
 
   .pxl-swatch-btn.active {
-    box-shadow: 0 0 0 2px #202223;
-    transform: scale(1.1);
+    box-shadow: 0 0 0 2.5px #0f172a;
+    transform: scale(1.12);
   }
 
+  .pxl-swatch-btn.active::after {
+    content: "✓";
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  }
+
+  /* Banners & Actions */
   .pxl-error-banner {
-    padding: 12px;
-    background-color: #fff4f4;
-    border: 1px solid #f6c8c8;
-    border-radius: 6px;
-    color: #d82c0d;
+    padding: 14px;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    color: #b91c1c;
     font-size: 13px;
+    font-weight: 600;
   }
 
   .pxl-success-banner {
-    padding: 12px;
-    background-color: #f1f8f5;
-    border: 1px solid #bce3c5;
-    border-radius: 6px;
-    color: #008060;
+    padding: 14px;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    color: #15803d;
     font-size: 13px;
+    font-weight: 600;
   }
 
   .pxl-actions {
-    margin-top: 8px;
+    margin-top: 6px;
   }
 
   .pxl-btn-primary {
     width: 100%;
-    padding: 14px 20px;
-    background-color: #008060;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: #ffffff;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.15s ease, opacity 0.15s ease;
+    transition: all 0.2s ease;
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
   }
 
   .pxl-btn-primary:hover:not(:disabled) {
-    background-color: #006e52;
+    background: linear-gradient(135deg, #008060 0%, #006e52 100%);
+    box-shadow: 0 6px 20px rgba(0, 128, 96, 0.35);
+    transform: translateY(-1px);
   }
 
   .pxl-btn-primary:disabled {
-    background-color: #919e9b;
+    background: #94a3b8;
+    box-shadow: none;
     cursor: not-allowed;
-    opacity: 0.8;
+    transform: none;
   }
 </style>
 
@@ -280,6 +460,9 @@
     let optionValues = {};
     let logicalWidth = 500;
     let logicalHeight = 500;
+
+    const deleteBtn = document.getElementById("pxl-btn-delete-selected");
+    const resetBtn = document.getElementById("pxl-btn-reset-canvas");
 
     function initCustomizer() {
       fetch(`/apps/customizer/config?productId=${productId}&shop=${shop || ""}`)
@@ -303,10 +486,10 @@
 
     function setupCanvas() {
       const canvasEl = document.getElementById("pxl-customizer-canvas");
-      const wrapper = document.getElementById("pxl-canvas-wrapper");
+      const studio = document.querySelector(".pxl-canvas-studio");
       
-      const wrapperWidth = Math.min(wrapper.clientWidth - 32, 500);
-      logicalWidth = wrapperWidth > 250 ? wrapperWidth : 450;
+      const availableWidth = Math.min(studio.clientWidth - 32, 520);
+      logicalWidth = availableWidth > 280 ? availableWidth : 340;
       logicalHeight = logicalWidth;
 
       canvas = new fabric.Canvas(canvasEl, {
@@ -316,36 +499,89 @@
         preserveObjectStacking: true,
       });
 
+      // Customize selection control handles for modern look
+      fabric.Object.prototype.set({
+        transparentCorners: false,
+        cornerColor: "#3b82f6",
+        cornerStrokeColor: "#ffffff",
+        borderColor: "#3b82f6",
+        cornerSize: 11,
+        padding: 6,
+        cornerStyle: "circle",
+      });
+
       if (customizableProduct.mockupImageUrl) {
-        fabric.Image.fromURL(
-          customizableProduct.mockupImageUrl,
-          function (img) {
-            const scale = Math.min(
-              logicalWidth / img.width,
-              logicalHeight / img.height
-            );
-            img.set({
-              scaleX: scale,
-              scaleY: scale,
-              left: (logicalWidth - img.width * scale) / 2,
-              top: (logicalHeight - img.height * scale) / 2,
-              selectable: false,
-              evented: false,
-            });
-            canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-          },
-          { crossOrigin: "anonymous" }
-        );
+        loadBackgroundMockup();
       }
 
       window.addEventListener("resize", handleCanvasResize);
+
+      // Selection state listeners for Delete button
+      canvas.on("selection:created", () => { deleteBtn.disabled = false; });
+      canvas.on("selection:updated", () => { deleteBtn.disabled = false; });
+      canvas.on("selection:cleared", () => { deleteBtn.disabled = true; });
+
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", () => {
+          const active = canvas.getActiveObject();
+          if (active) {
+            if (active.optId) {
+              // Clear option value if linked
+              optionValues[active.optId] = "";
+              const textInput = document.querySelector(`[data-opt-id="${active.optId}"] input[type="text"]`);
+              if (textInput) textInput.value = "";
+            }
+            canvas.remove(active);
+            canvas.discardActiveObject();
+            canvas.renderAll();
+          }
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+          if (confirm("Reset your current design elements?")) {
+            canvas.getObjects().forEach((obj) => {
+              canvas.remove(obj);
+            });
+            optionValues = {};
+            document.querySelectorAll(".pxl-text-input").forEach((inp) => (inp.value = ""));
+            document.querySelectorAll(".pxl-swatch-btn").forEach((btn) => btn.classList.remove("active"));
+            document.querySelectorAll(".pxl-file-pill").forEach((pill) => pill.remove());
+            canvas.discardActiveObject();
+            canvas.renderAll();
+          }
+        });
+      }
+    }
+
+    function loadBackgroundMockup() {
+      fabric.Image.fromURL(
+        customizableProduct.mockupImageUrl,
+        function (img) {
+          const scale = Math.min(
+            logicalWidth / img.width,
+            logicalHeight / img.height
+          );
+          img.set({
+            scaleX: scale,
+            scaleY: scale,
+            left: (logicalWidth - img.width * scale) / 2,
+            top: (logicalHeight - img.height * scale) / 2,
+            selectable: false,
+            evented: false,
+          });
+          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+        },
+        { crossOrigin: "anonymous" }
+      );
     }
 
     function handleCanvasResize() {
       if (!canvas) return;
-      const wrapper = document.getElementById("pxl-canvas-wrapper");
-      const newWidth = Math.min(wrapper.clientWidth - 32, logicalWidth);
-      if (newWidth > 100) {
+      const studio = document.querySelector(".pxl-canvas-studio");
+      const newWidth = Math.min(studio.clientWidth - 32, logicalWidth);
+      if (newWidth > 120) {
         const zoom = newWidth / logicalWidth;
         canvas.setDimensions({
           width: logicalWidth * zoom,
@@ -361,31 +597,32 @@
       optionsListEl.innerHTML = "";
 
       if (!customizableProduct.options || customizableProduct.options.length === 0) {
-        optionsListEl.innerHTML = '<p style="color:#6d7175;font-size:14px;">No customizable options configured for this product.</p>';
+        optionsListEl.innerHTML = '<p style="color:#64748b;font-size:14px;">No customizable options configured for this product.</p>';
         return;
       }
 
       customizableProduct.options.forEach((opt) => {
         const card = document.createElement("div");
         card.className = "pxl-option-card";
+        card.setAttribute("data-opt-id", opt.id);
 
         const labelEl = document.createElement("div");
         labelEl.className = "pxl-option-label";
-        labelEl.innerHTML = `<span>${opt.label}</span>${opt.required ? '<span class="pxl-required-badge">* Required</span>' : ''}`;
+        labelEl.innerHTML = `<span>${opt.label}</span>${opt.required ? '<span class="pxl-required-badge">Required</span>' : ''}`;
         card.appendChild(labelEl);
 
         const inputGroup = document.createElement("div");
         inputGroup.className = "pxl-input-group";
 
         if (opt.type === "TEXT") {
-          const fontChoices = opt.config.fonts || ["Arial", "Courier New", "Georgia", "Times New Roman", "Verdana"];
+          const fontChoices = opt.config.fonts || ["Arial", "Outfit", "Courier New", "Georgia", "Verdana"];
           if (fontChoices.length > 0) {
             const selectFont = document.createElement("select");
             selectFont.className = "pxl-select-input";
             fontChoices.forEach((font) => {
               const option = document.createElement("option");
               option.value = font;
-              option.textContent = font;
+              option.textContent = `Font: ${font}`;
               selectFont.appendChild(option);
             });
             selectFont.addEventListener("change", (e) => updateTextObject(opt, { fontFamily: e.target.value }));
@@ -395,7 +632,7 @@
           const textInput = document.createElement("input");
           textInput.type = "text";
           textInput.className = "pxl-text-input";
-          textInput.placeholder = "Enter custom text...";
+          textInput.placeholder = "Type your text here...";
           if (opt.config.maxChars) textInput.maxLength = opt.config.maxChars;
 
           textInput.addEventListener("input", (e) => {
@@ -405,18 +642,23 @@
           });
           inputGroup.appendChild(textInput);
         } else if (opt.type === "IMAGE_UPLOAD") {
-          const fileInput = document.createElement("input");
-          fileInput.type = "file";
-          fileInput.accept = "image/*";
-          fileInput.className = "pxl-file-input";
+          const dropzone = document.createElement("div");
+          dropzone.className = "pxl-upload-dropzone";
+          dropzone.innerHTML = `
+            <div class="pxl-upload-icon">📁</div>
+            <div class="pxl-upload-text"><strong>Click to select image</strong> or drag & drop</div>
+            <div class="pxl-upload-sub">PNG, JPG, WEBP (Max ${opt.config.maxFileSizeMB || 10}MB)</div>
+            <input type="file" accept="image/*" class="pxl-file-input-hidden" />
+          `;
 
+          const fileInput = dropzone.querySelector("input");
           fileInput.addEventListener("change", (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
             const maxMB = opt.config.maxFileSizeMB || 10;
             if (file.size > maxMB * 1024 * 1024) {
-              showError(`File size exceeds the limit of ${maxMB} MB.`);
+              showError(`Image exceeds maximum allowed size (${maxMB} MB).`);
               return;
             }
 
@@ -426,12 +668,31 @@
               const dataUrl = event.target.result;
               optionValues[opt.id] = dataUrl;
               updateImageObject(opt, dataUrl);
+
+              // Update pill UI
+              let pill = card.querySelector(".pxl-file-pill");
+              if (!pill) {
+                pill = document.createElement("div");
+                pill.className = "pxl-file-pill";
+                card.appendChild(pill);
+              }
+              pill.innerHTML = `<span>🖼️ ${file.name.slice(0, 20)}...</span> <strong style="cursor:pointer;" title="Remove">✕</strong>`;
+              pill.querySelector("strong").addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                fileInput.value = "";
+                optionValues[opt.id] = "";
+                const obj = findObjectByOptId(opt.id);
+                if (obj) canvas.remove(obj);
+                canvas.renderAll();
+                pill.remove();
+              });
             };
             reader.readAsDataURL(file);
           });
-          inputGroup.appendChild(fileInput);
+
+          inputGroup.appendChild(dropzone);
         } else if (opt.type === "COLOR_PICKER") {
-          const colors = opt.config.colors || ["#FF0000", "#00FF00", "#0000FF", "#000000", "#FFFFFF"];
+          const colors = opt.config.colors || ["#0f172a", "#ef4444", "#22c55e", "#3b82f6", "#eab308", "#ec4899", "#ffffff"];
           const swatchList = document.createElement("div");
           swatchList.className = "pxl-swatch-list";
 
@@ -440,6 +701,7 @@
             btn.type = "button";
             btn.className = "pxl-swatch-btn";
             btn.style.backgroundColor = hex;
+            btn.title = `Color ${hex}`;
             btn.addEventListener("click", () => {
               swatchList.querySelectorAll(".pxl-swatch-btn").forEach((b) => b.classList.remove("active"));
               btn.classList.add("active");
@@ -450,13 +712,13 @@
           });
           inputGroup.appendChild(swatchList);
         } else if (opt.type === "DROPDOWN") {
-          const choices = opt.config.choices || ["Choice 1", "Choice 2", "Choice 3"];
+          const choices = opt.config.choices || ["Standard Option 1", "Standard Option 2"];
           const select = document.createElement("select");
           select.className = "pxl-select-input";
 
           const defaultOpt = document.createElement("option");
           defaultOpt.value = "";
-          defaultOpt.textContent = "-- Select an option --";
+          defaultOpt.textContent = "-- Choose an option --";
           select.appendChild(defaultOpt);
 
           choices.forEach((choice) => {
@@ -499,16 +761,16 @@
         if (updates.fontFamily !== undefined) obj.set("fontFamily", updates.fontFamily);
         if (updates.fill !== undefined) obj.set("fill", updates.fill);
       } else if (updates.text) {
-        const selectEl = document.querySelector(`.pxl-option-card select`);
+        const selectEl = document.querySelector(`[data-opt-id="${opt.id}"] select`);
         const initialFont = selectEl ? selectEl.value : (opt.config.fonts?.[0] || "Arial");
         
         obj = new fabric.IText(updates.text, {
-          left: opt.printAreaX || 50,
-          top: opt.printAreaY || 50,
-          width: opt.printAreaWidth || 200,
-          fontSize: opt.config.defaultFontSize || 24,
+          left: opt.printAreaX || (logicalWidth * 0.2),
+          top: opt.printAreaY || (logicalHeight * 0.4),
+          width: opt.printAreaWidth || (logicalWidth * 0.6),
+          fontSize: opt.config.defaultFontSize || 28,
           fontFamily: initialFont,
-          fill: opt.config.defaultColor || "#000000",
+          fill: opt.config.defaultColor || "#0f172a",
           editable: true,
         });
         obj.optId = opt.id;
@@ -526,13 +788,13 @@
       fabric.Image.fromURL(
         dataUrl,
         function (img) {
-          const targetW = opt.printAreaWidth || 150;
-          const targetH = opt.printAreaHeight || 150;
+          const targetW = opt.printAreaWidth || (logicalWidth * 0.45);
+          const targetH = opt.printAreaHeight || (logicalHeight * 0.45);
           const scale = Math.min(targetW / img.width, targetH / img.height);
 
           img.set({
-            left: opt.printAreaX || 50,
-            top: opt.printAreaY || 50,
+            left: opt.printAreaX || (logicalWidth * 0.28),
+            top: opt.printAreaY || (logicalHeight * 0.28),
             scaleX: scale,
             scaleY: scale,
           });
@@ -572,30 +834,13 @@
       }
 
       if (choiceVal.match(/^https?:\/\/.+\.(png|jpg|jpeg|svg|webp)($|\?)/i)) {
-        fabric.Image.fromURL(
-          choiceVal,
-          function (img) {
-            const targetW = opt.printAreaWidth || 150;
-            const targetH = opt.printAreaHeight || 150;
-            const scale = Math.min(targetW / img.width, targetH / img.height);
-            img.set({
-              left: opt.printAreaX || 50,
-              top: opt.printAreaY || 50,
-              scaleX: scale,
-              scaleY: scale,
-            });
-            img.optId = opt.id;
-            canvas.add(img);
-            canvas.renderAll();
-          },
-          { crossOrigin: "anonymous" }
-        );
+        updateImageObject(opt, choiceVal);
       } else {
         obj = new fabric.Text(choiceVal, {
-          left: opt.printAreaX || 50,
-          top: opt.printAreaY || 50,
+          left: opt.printAreaX || (logicalWidth * 0.25),
+          top: opt.printAreaY || (logicalHeight * 0.45),
           fontSize: 26,
-          fill: "#111111",
+          fill: "#0f172a",
           fontWeight: "bold",
         });
         obj.optId = opt.id;
@@ -634,8 +879,9 @@
       }
 
       addToCartBtn.disabled = true;
-      const originalText = addToCartBtn.querySelector("span").textContent;
-      addToCartBtn.querySelector("span").textContent = "Processing Design...";
+      const btnText = addToCartBtn.querySelector(".pxl-btn-text");
+      const originalText = btnText.textContent;
+      btnText.textContent = "Saving Design...";
 
       try {
         canvas.discardActiveObject();
@@ -644,7 +890,7 @@
         const designData = JSON.stringify(canvas.toJSON());
         const previewDataUrl = canvas.toDataURL({
           format: "png",
-          quality: 0.85,
+          quality: 0.9,
           multiplier: 1.5,
         });
 
@@ -659,7 +905,7 @@
 
         const previewJson = await previewResponse.json();
         if (!previewResponse.ok || previewJson.error) {
-          throw new Error(previewJson.error || "Failed to generate preview image");
+          throw new Error(previewJson.error || "Failed to save preview image");
         }
 
         const previewImageUrl = previewJson.previewImageUrl;
@@ -673,11 +919,11 @@
             customizableProductId: customizableProduct.id,
             designData,
             previewImageUrl,
-            customerNote: "Submitted from storefront customizer block",
+            customerNote: "Created with Interactive Studio",
           }),
         });
 
-        addToCartBtn.querySelector("span").textContent = "Adding to Cart...";
+        btnText.textContent = "Adding to Cart...";
         const cartResponse = await fetch("/cart/add.js", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -701,19 +947,19 @@
         }
 
         showSuccess("Design saved and added to cart successfully!");
-        addToCartBtn.querySelector("span").textContent = "Added!";
+        btnText.textContent = "Added to Cart!";
         
         setTimeout(() => {
           if (typeof window.Shopify !== "undefined" && window.Shopify.onCartUpdate) {
             window.Shopify.onCartUpdate();
           }
           window.location.href = "/cart";
-        }, 1200);
+        }, 1100);
       } catch (err) {
         console.error("Add to cart error:", err);
         showError(err.message || "An error occurred while adding to cart.");
         addToCartBtn.disabled = false;
-        addToCartBtn.querySelector("span").textContent = originalText;
+        btnText.textContent = originalText;
       }
     });
 
