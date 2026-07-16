@@ -1,0 +1,49 @@
+<div 
+  class="pxl-product-options-root"
+  data-product-id="{{ product.id }}"
+  data-product-vendor="{{ product.vendor | escape }}"
+  data-product-type="{{ product.type | escape }}"
+  data-product-tags="{{ product.tags | join: ',' | escape }}"
+  data-product-collections="{% for collection in product.collections %}{{ collection.id }},{% endfor %}"
+  data-base-price="{{ product.selected_or_first_available_variant.price }}"
+  data-currency-symbol="{{ cart.currency.symbol | default: '$' }}"
+  data-shop="{{ shop.permanent_domain | default: shop.domain }}"
+>
+  <div class="pxl-options-container" id="pxl-options-container">
+    <div class="pxl-options-loading">Loading personalized options...</div>
+  </div>
+  
+  <div class="pxl-options-price-summary" id="pxl-options-price-summary" style="display: none;">
+    <div class="pxl-price-row">
+      <span>Base Price:</span>
+      <span id="pxl-base-price-display">{{ product.selected_or_first_available_variant.price | money }}</span>
+    </div>
+    <div class="pxl-price-row pxl-options-total-row">
+      <span>Options Total:</span>
+      <span id="pxl-options-price-display">+ {{ 0 | money }}</span>
+    </div>
+    <div class="pxl-price-row pxl-final-total-row">
+      <strong>Final Price:</strong>
+      <strong id="pxl-final-price-display">{{ product.selected_or_first_available_variant.price | money }}</strong>
+    </div>
+  </div>
+</div>
+
+{{ 'product-options.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-options.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Product Options",
+  "target": "section",
+  "templates": ["product"],
+  "settings": [
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Primary Color",
+      "default": "#000000"
+    }
+  ]
+}
+{% endschema %}
