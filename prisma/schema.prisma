@@ -33,6 +33,64 @@ model Session {
   refreshTokenExpires DateTime?
 }
 
+model OptionSet {
+  id           String                @id @default(cuid())
+  shop         String
+  title        String
+  internalName String?
+  isActive     Boolean               @default(true)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  options      Option[]
+  assignments  OptionSetAssignment[]
+}
+
+model Option {
+  id          String    @id @default(cuid())
+  optionSetId String
+  optionSet   OptionSet @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
+
+  name     String
+  label    String
+  type     String // TEXT, TEXTAREA, NUMBER, DROPDOWN, RADIO, CHECKBOX, BUTTONS, COLOR_SWATCH, IMAGE_SWATCH, FILE_UPLOAD, DATE, TIME, PRODUCT_PICKER, VARIANT_PICKER, QUANTITY
+
+  helpText String?
+  tooltip  String?
+  required Boolean @default(false)
+
+  settings String // JSON string for defaults, placeholders, limits, conditional logic, pricing rules
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OptionSetAssignment {
+  id          String    @id @default(cuid())
+  optionSetId String
+  optionSet   OptionSet @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
+
+  type        String // ALL_PRODUCTS, PRODUCT, COLLECTION, TAG, VENDOR, TYPE
+  targetId    String? // ID of the product, collection, tag name, etc.
+  isExclusion Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderCustomization {
+  id                String  @id @default(cuid())
+  shop              String
+  shopifyOrderId    String?
+  shopifyLineItemId String?
+
+  optionsData String // JSON string containing the selected options, values, price additions
+
+  status    String   @default("PENDING") // PENDING, ORDERED, IN_PRODUCTION, COMPLETED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model CustomizableProduct {
   id               String                @id @default(cuid())
   shop             String
@@ -49,11 +107,11 @@ model CustomizableProduct {
 model CustomizationOption {
   id                    String              @id @default(cuid())
   customizableProductId String
-  customizableProduct   CustomizableProduct @relation(fields: [customizableProductId], references: [id], onDelete: Cascade)
-  type                  String // TEXT, IMAGE_UPLOAD, COLOR_PICKER, DROPDOWN
+  product               CustomizableProduct @relation(fields: [customizableProductId], references: [id], onDelete: Cascade)
+  type                  String
   label                 String
   required              Boolean             @default(false)
-  config                String // JSON string storing type-specific settings
+  config                String
   printAreaX            Float               @default(0)
   printAreaY            Float               @default(0)
   printAreaWidth        Float               @default(200)
@@ -65,14 +123,22 @@ model DesignSubmission {
   id                    String              @id @default(cuid())
   shop                  String
   customizableProductId String
-  customizableProduct   CustomizableProduct @relation(fields: [customizableProductId], references: [id], onDelete: Cascade)
+  product               CustomizableProduct @relation(fields: [customizableProductId], references: [id], onDelete: Cascade)
   shopifyOrderId        String?
   shopifyLineItemId     String?
-  designData            String // JSON string (Fabric.js/Konva canvas export)
+  designData            String
   previewImageUrl       String
   hiResImageUrl         String?
   customerNote          String?
-  status                String              @default("PENDING") // PENDING, ORDERED, IN_PRODUCTION, COMPLETED
+  status                String              @default("PENDING")
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
+}
+
+model AppSetting {
+  id        String   @id @default(cuid())
+  shop      String   @unique
+  settings  String   // JSON string containing all user settings
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

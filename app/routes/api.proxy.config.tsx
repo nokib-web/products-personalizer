@@ -28,7 +28,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     where: {
       ...(shop ? { shop } : {}),
       shopifyProductId: {
-        in: [numericId, gid, productId],
+        in: [numericId, gid, productId, "ALL"],
       },
       isActive: true,
     },

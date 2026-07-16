@@ -1,6 +1,7 @@
 {
-  "recommendations": [
-    "graphql.vscode-graphql",
-    "shopify.polaris-for-vscode",
-  ]
+    "recommendations": [
+        "myml.vscode-markdown-plantuml-preview",
+        "esbenp.prettier-vscode",
+        "jebbs.plantuml"
+    ]
 }
